@@ -888,6 +888,7 @@ typedef enum {
 	FILE_TYPE_CAB,
 	FILE_TYPE_PE,
 	FILE_TYPE_MSI,
+	FILE_TYPE_UNKNOWN,
 } file_type_t;
 
 typedef enum {
@@ -2410,6 +2411,7 @@ int main(int argc, char **argv)
 #endif
 	int nest = 0;
 	int add_msi_dse = 0;
+	int sign_smime = 0;
 	int nturl = 0, ntsurl = 0;
 	int addBlob = 0;
 	u_char *p = NULL;
@@ -2529,6 +2531,8 @@ int main(int argc, char **argv)
 			if (askpass || pass) usage(argv0);
 			if (--argc < 1) usage(argv0);
 			readpass = *(++argv);
+		} else if ((cmd == CMD_SIGN) && !strcmp(*argv, "-smime")) {
+			sign_smime = 1;
 		} else if ((cmd == CMD_SIGN) && !strcmp(*argv, "-comm")) {
 			comm = 1;
 		} else if ((cmd == CMD_SIGN) && !strcmp(*argv, "-ph")) {
@@ -2796,11 +2800,13 @@ int main(int argc, char **argv)
 		gsf_init();
 		gsf_initialized = 1;
 #endif
+	} else if (sign_smime) {
+		type = FILE_TYPE_UNKNOWN;
 	} else {
 		DO_EXIT_1("Unrecognized file type: %s\n", infile);
 	}
 
-	if (cmd != CMD_SIGN && !(type == FILE_TYPE_PE || type == FILE_TYPE_MSI))
+	if (cmd != CMD_SIGN && !(type == FILE_TYPE_PE || type == FILE_TYPE_MSI) && !sign_smime)
 		DO_EXIT_1("Command is not supported for non-PE/non-MSI files: %s\n", infile);
 
 	hash = BIO_new(BIO_f_md());
@@ -3133,6 +3139,51 @@ int main(int argc, char **argv)
 
 	if (cmd != CMD_SIGN)
 		goto skip_signing;
+
+	if (sign_smime) {
+		BIO *in = NULL, *out = NULL;
+		int flags = PKCS7_BINARY | PKCS7_NOATTR | PKCS7_PARTIAL;
+
+		/* Open content being signed */
+
+		in = BIO_new_file(infile, "rb");
+
+		if (!in)
+			goto err_cleanup;
+
+		/* Sign content */
+		sig = PKCS7_sign(cert, pkey, certs, in, flags);
+
+		if (!sig)
+			goto err_cleanup;
+
+		if (!PKCS7_final(sig, in, flags))
+			goto err_cleanup;
+
+#ifdef ENABLE_CURL
+		/* add counter-signature/timestamp */
+		if (nturl && add_timestamp_authenticode(sig, turl, nturl, proxy, noverifypeer))
+			DO_EXIT_0("authenticode timestamping failed\n");
+		if (ntsurl && add_timestamp_rfc3161(sig, tsurl, ntsurl, proxy, md, noverifypeer))
+			DO_EXIT_0("RFC 3161 timestamping failed\n");
+#endif
+
+		out = BIO_new_file(outfile, "wb");
+		if (!out)
+			goto err_cleanup;
+
+		if (!(flags & PKCS7_STREAM))
+			BIO_reset(in);
+
+		/* Write out ASN.1 file */
+		if (!i2d_PKCS7_bio_stream(out, sig, in, flags))
+			goto err_cleanup;
+		if (in)
+			BIO_free(in);
+		if (out)
+			BIO_free(out);
+		goto skip_signing;
+	}
 
 	sig = PKCS7_new();
 	PKCS7_set_type(sig, NID_pkcs7_signed);
