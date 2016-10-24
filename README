@@ -1,3 +1,14 @@
+osslsigndata
+============
+
+This is an unofficial fork of osslsigncode to sign and timestamp
+arbitrary binary data and write the result as a PKCS7 data file.
+This is similar to 'openssl smime -sign -noattr -nodetach' but
+with timestamping.  The -smime flag enables this functionality,
+otherwise the original osslsigncode functionality is used.
+
+Original README follows:
+
 osslsigncode
 ============
 
