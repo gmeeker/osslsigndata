@@ -32,7 +32,7 @@ RUN { \
 ADD . /osslsigndata
 WORKDIR /osslsigndata
 RUN { \
-    export OPENSSL_CFLAGS="-I$/usr/local/include" && \
+    export OPENSSL_CFLAGS="-I/usr/local/include" && \
     export OPENSSL_LIBS="-L/usr/local/lib -lcrypto" && \
     ./autogen.sh && \
     ./configure && \
