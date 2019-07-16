@@ -11,13 +11,14 @@ RUN apk update && apk upgrade && apk add \
   gcc \
   git \
   libtool \
+  linux-headers \
   make \
   musl-dev \
   zip
 
 # Build osslsigndata
 RUN { \
-    VERSION=1.0.2r && \
+    VERSION=1.1.1c && \
     cd && \
     curl --silent --show-error https://www.openssl.org/source/openssl-"$VERSION".tar.gz -o openssl-"$VERSION".tar.gz && \
     tar xzvf openssl-"$VERSION".tar.gz && \
