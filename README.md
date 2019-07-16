@@ -7,6 +7,9 @@ This is similar to 'openssl smime -sign -noattr -nodetach' but
 with timestamping.  The -smime flag enables this functionality,
 otherwise the original osslsigncode functionality is used.
 
+Merged with unofficially yet maintained fork:
+https://github.com/mtrojnar/osslsigncode.git
+
 Original README follows:
 
 osslsigncode
