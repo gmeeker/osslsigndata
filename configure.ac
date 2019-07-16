@@ -1,6 +1,6 @@
 AC_PREREQ(2.60)
 
-AC_INIT([osslsigncode], [1.7.1], [pallansson@gmail.com])
+AC_INIT([osslsigncode], [2.1.0], [Michal.Trojnara@stunnel.org])
 AC_CONFIG_AUX_DIR([.])
 AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE
@@ -78,32 +78,32 @@ AC_CHECK_HEADERS([termios.h])
 AC_CHECK_FUNCS(getpass)
 
 AC_ARG_WITH([gsf],
-        AS_HELP_STRING([--without-gsf], [Ignore presence of libgsf and disable it])
+	AS_HELP_STRING([--without-gsf], [Ignore presence of libgsf and disable it])
 )
 AS_IF([test "x$with_gsf" != "xno"],
-        [PKG_CHECK_MODULES([GSF], [libgsf-1], [have_gsf=yes], [have_gsf=no])],
-        [have_gsf=no]
+	[PKG_CHECK_MODULES([GSF], [libgsf-1], [have_gsf=yes], [have_gsf=no])],
+	[have_gsf=no]
 )
 AS_IF([test "x$have_gsf" = "xyes"],
-        [AC_DEFINE([WITH_GSF], 1, [Have libgsf?])],
-        [AS_IF([test "x$with_gsf" = "xyes"],
-                [AC_MSG_ERROR([libgsf requested but not found])])]
+	[AC_DEFINE([WITH_GSF], 1, [Have libgsf?])],
+	[AS_IF([test "x$with_gsf" = "xyes"],
+		[AC_MSG_ERROR([libgsf requested but not found])])]
 )
 
 
 PKG_CHECK_MODULES(
 	[OPENSSL],
-	[libcrypto >= 0.9.8],
+	[libcrypto >= 1.1.0],
 	,
 	[PKG_CHECK_MODULES(
 		[OPENSSL],
-		[openssl >= 0.9.8],
+		[openssl >= 1.1.0],
 		,
 		[AC_CHECK_LIB(
 			[crypto],
-			[RSA_verify],
+			[EVP_MD_CTX_new],
 			[OPENSSL_LIBS="-lcrypto ${SOCKETS_LIBS} ${DL_LIBS}"],
-			[AC_MSG_ERROR([OpenSSL 0.9.8 or later is required. http://www.openssl.org/])],
+			[AC_MSG_ERROR([OpenSSL 1.1.0 or later is required. https://www.openssl.org/])],
 			[${DL_LIBS}]
 		)]
 	)]
@@ -134,3 +134,5 @@ AC_SUBST([OPTIONAL_LIBCURL_LIBS])
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
+
+# vim: set ts=4 noexpandtab:
