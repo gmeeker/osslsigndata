@@ -18,7 +18,7 @@ RUN apk update && apk upgrade && apk add \
 
 # Build osslsigndata
 RUN { \
-    VERSION=3.1.5 && \
+    VERSION=3.2.1 && \
     cd && \
     curl --silent --show-error https://www.openssl.org/source/openssl-"$VERSION".tar.gz -o openssl-"$VERSION".tar.gz && \
     tar xzvf openssl-"$VERSION".tar.gz && \
