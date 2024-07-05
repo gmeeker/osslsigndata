@@ -20,7 +20,7 @@ RUN apk update && apk upgrade && apk add \
 RUN { \
     VERSION=3.2.2 && \
     cd && \
-    curl --silent --show-error https://www.openssl.org/source/openssl-"$VERSION".tar.gz -o openssl-"$VERSION".tar.gz && \
+    curl -L --silent --show-error https://www.openssl.org/source/openssl-"$VERSION".tar.gz -o openssl-"$VERSION".tar.gz && \
     tar xzvf openssl-"$VERSION".tar.gz && \
     mv openssl-"$VERSION" openssl && \
     cd openssl && \
